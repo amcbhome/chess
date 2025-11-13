@@ -1,107 +1,71 @@
 import streamlit as st
 
-# ------------------------------------------------------------
-# PAGE CONFIG
-# ------------------------------------------------------------
 st.set_page_config(
-    page_title="Lichess Opening Explorer + Chess Article",
-    layout="wide"
+    page_title="Lichess Opening Statistics from FEN",
+    page_icon="♟",
+    layout="wide",
 )
 
-# ------------------------------------------------------------
-# SIDEBAR
-# ------------------------------------------------------------
-st.sidebar.title("Database & Filters")
+# ---------------------------------------------
+# SIDEBAR — DATABASE & FILTERS
+# ---------------------------------------------
+
+st.sidebar.header("Database & Filters")
 
 db_choice = st.sidebar.radio(
     "Database",
-    ["Lichess (online games)", "Masters (OTB)"],
+    options=["Lichess (online games)", "Masters (OTB)"],
     index=0
 )
 
-# Game speeds (only for Lichess)
-if db_choice == "Lichess (online games)":
-    st.sidebar.subheader("Game speeds (online)")
-    speeds = st.sidebar.multiselect(
-        "Speeds",
-        ["bullet", "blitz", "rapid", "classical"],
-        default=["blitz", "rapid", "classical"]
-    )
-else:
-    speeds = []
+speeds = st.sidebar.multiselect(
+    "Game speeds (online)",
+    ["bullet", "blitz", "rapid", "classical"],
+    default=["blitz", "rapid", "classical"]
+)
 
-# Rating filters (only for Lichess)
-if db_choice == "Lichess (online games)":
-    st.sidebar.subheader("Rating filters (online)")
-    rating_bucket = st.sidebar.selectbox(
-        "Rating buckets",
-        ["All ratings", "0-900", "900-1200", "1200-1500",
-         "1500-1800", "1800-2100", "2100+"],
-        index=0
-    )
+ratings = st.sidebar.selectbox(
+    "Rating buckets (online)",
+    ["All ratings", "0–1400", "1400–1800", "1800–2200", "2200+"],
+    index=0
+)
 
-st.sidebar.write("---")
-st.sidebar.write("Filters ready.")
+st.sidebar.markdown("---")
+st.sidebar.caption("Filters ready.")
 
-# ------------------------------------------------------------
+
+# ---------------------------------------------
 # MAIN TITLE
-# ------------------------------------------------------------
-st.title("♟️ Lichess Opening Statistics from FEN")
+# ---------------------------------------------
 
-st.write("""
-Enter any chess position in **FEN format** and query the Lichess Opening Explorer
-(online or Masters database) to see the most common next moves and their statistics.
-""")
+st.title("♟ Lichess Opening Statistics from FEN")
+st.write(
+    "Enter any chess position in **FEN format** and query the Lichess Opening Explorer "
+    "(online games or Masters DB) to see the most common next moves and their statistics."
+)
 
-# ------------------------------------------------------------
+
+# ---------------------------------------------
 # FEN INPUT
-# ------------------------------------------------------------
+# ---------------------------------------------
+
 fen_input = st.text_input(
     "FEN position",
     value="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 )
 
-# ------------------------------------------------------------
-# Lichess Query Placeholder
-# ------------------------------------------------------------
 if st.button("Query Lichess"):
-    st.info("⚙️ Lichess API query would run here (your logic).")
+    st.info("🔍 Lichess API query would run here (your API logic).")
     st.write("FEN queried:", fen_input)
 
-# ------------------------------------------------------------
-# PDF ARTICLE SECTION
-# ------------------------------------------------------------
+    # placeholder output
+    st.success("Example output: Move statistics would be displayed here.")
+
+
+# ---------------------------------------------
+# END OF APP
+# ---------------------------------------------
+
 st.write("---")
-st.subheader("📘 View the Chess Article")
-
-# PDF hosted on GitHub Pages
-PDF_URL = "https://amcbhome.github.io/chess/Gambit_Chess_Article.pdf"
-
-# Open PDF in a new tab
-st.markdown(
-    f"""
-    <p style="font-size:20px; padding-top:10px;">
-        <a href="{PDF_URL}" target="_blank" style="text-decoration:none;">
-            📄 Open PDF article in a new tab
-        </a>
-    </p>
-    """,
-    unsafe_allow_html=True
-)
-
-# Optional download button - PDF must be in repo root for this to work
-try:
-    with open("Gambit_Chess_Article.pdf", "rb") as f:
-        st.download_button(
-            "⬇️ Download PDF article",
-            f,
-            file_name="Gambit_Chess_Article.pdf",
-            mime="application/pdf"
-        )
-except:
-    st.info("Local PDF not found (download disabled).")
-
-# ------------------------------------------------------------
-# END OF FILE
-# ------------------------------------------------------------
+st.caption("© 2025 — Lichess FEN Opening Stats Tool (Streamlit)")
 
