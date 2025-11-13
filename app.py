@@ -1,5 +1,4 @@
 import streamlit as st
-import base64
 
 # ------------------------------------------------------------
 # PAGE CONFIG
@@ -21,7 +20,7 @@ db_choice = st.sidebar.radio(
     index=0
 )
 
-# Game speeds (for Lichess only)
+# Game speeds (only for Lichess)
 if db_choice == "Lichess (online games)":
     st.sidebar.subheader("Game speeds (online)")
     speeds = st.sidebar.multiselect(
@@ -32,7 +31,7 @@ if db_choice == "Lichess (online games)":
 else:
     speeds = []
 
-# Rating filters (for Lichess only)
+# Rating filters (only for Lichess)
 if db_choice == "Lichess (online games)":
     st.sidebar.subheader("Rating filters (online)")
     rating_bucket = st.sidebar.selectbox(
@@ -56,7 +55,7 @@ Enter any chess position in **FEN format** and query the Lichess Opening Explore
 """)
 
 # ------------------------------------------------------------
-# FEN INPUT
+# FEN INPUT BOX
 # ------------------------------------------------------------
 fen_input = st.text_input(
     "FEN position",
@@ -71,38 +70,41 @@ if st.button("Query Lichess"):
     st.write("FEN queried:", fen_input)
 
 # ------------------------------------------------------------
-# PDF ARTICLE SECTION
+# PDF ARTICLE SECTION (Chrome-safe)
 # ------------------------------------------------------------
 st.write("---")
 st.subheader("📘 View the Chess Article")
 
 PDF_FILE = "Gambit_Chess_Article.pdf"
 
-if st.button("📄 View PDF article"):
-    try:
-        with open(PDF_FILE, "rb") as f:
-            pdf_bytes = f.read()
-            base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
+st.markdown(
+    f"""
+    <div style="padding-top:10px; padding-bottom:20px;">
+        <a href="{PDF_FILE}" target="_blank"
+           style="font-size:20px; text-decoration:none;">
+           📄 Open PDF article in a new tab
+        </a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-        # Embedded PDF viewer
-        pdf_display = f"""
-            <iframe 
-                src="data:application/pdf;base64,{base64_pdf}" 
-                width="100%" 
-                height="1100" 
-                type="application/pdf">
-            </iframe>
-        """
-        st.markdown(pdf_display, unsafe_allow_html=True)
-
-    except FileNotFoundError:
-        st.error(f"❌ PDF file '{PDF_FILE}' not found.")
-        st.info("Make sure the PDF is in the same folder as app.py.")
-
-    except Exception as e:
-        st.error(f"❌ Error loading PDF: {e}")
-        st.info("If the PDF is large, use a link-to-open method instead.")
+# ------------------------------------------------------------
+# OPTIONAL: PDF DOWNLOAD BUTTON
+# ------------------------------------------------------------
+try:
+    with open(PDF_FILE, "rb") as f:
+        st.download_button(
+            label="⬇️ Download PDF article",
+            data=f,
+            file_name=PDF_FILE,
+            mime="application/pdf"
+        )
+except FileNotFoundError:
+    st.error(f"PDF file '{PDF_FILE}' not found.")
+    st.info("Ensure the PDF is located in the same folder as app.py.")
 
 # ------------------------------------------------------------
 # END OF FILE
 # ------------------------------------------------------------
+
