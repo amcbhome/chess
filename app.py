@@ -5,12 +5,12 @@ import base64
 # PAGE CONFIG
 # ------------------------------------------------------------
 st.set_page_config(
-    page_title="Lichess Opening Explorer + Article Viewer",
+    page_title="Lichess Opening Explorer + Chess Article",
     layout="wide"
 )
 
 # ------------------------------------------------------------
-# SIDEBAR: DATABASE & FILTERS
+# SIDEBAR
 # ------------------------------------------------------------
 st.sidebar.title("Database & Filters")
 
@@ -21,7 +21,7 @@ db_choice = st.sidebar.radio(
     index=0
 )
 
-# Game speeds (only for Lichess)
+# Game speeds (for Lichess only)
 if db_choice == "Lichess (online games)":
     st.sidebar.subheader("Game speeds (online)")
     speeds = st.sidebar.multiselect(
@@ -32,7 +32,7 @@ if db_choice == "Lichess (online games)":
 else:
     speeds = []
 
-# Rating filters (only for Lichess)
+# Rating filters (for Lichess only)
 if db_choice == "Lichess (online games)":
     st.sidebar.subheader("Rating filters (online)")
     rating_bucket = st.sidebar.selectbox(
@@ -52,7 +52,7 @@ st.title("♟️ Lichess Opening Statistics from FEN")
 
 st.write("""
 Enter any chess position in **FEN format** and query the Lichess Opening Explorer
-(online or Masters DB) to find the most common next moves and their statistics.
+(online or Masters database) to see the most common next moves and their statistics.
 """)
 
 # ------------------------------------------------------------
@@ -64,19 +64,19 @@ fen_input = st.text_input(
 )
 
 # ------------------------------------------------------------
-# QUERY BUTTON (placeholder for your existing code)
+# QUERY BUTTON (placeholder)
 # ------------------------------------------------------------
 if st.button("Query Lichess"):
     st.info("⚙️ Lichess API query would run here (your existing logic).")
     st.write("FEN queried:", fen_input)
 
 # ------------------------------------------------------------
-# VIEW PDF ARTICLE SECTION
+# PDF ARTICLE SECTION
 # ------------------------------------------------------------
 st.write("---")
 st.subheader("📘 View the Chess Article")
 
-PDF_FILE = "Chess_Article_on_Gambit_Openings.pdf"
+PDF_FILE = "Gambit_Chess_Article.pdf"
 
 if st.button("📄 View PDF article"):
     try:
@@ -84,6 +84,7 @@ if st.button("📄 View PDF article"):
             pdf_bytes = f.read()
             base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
 
+        # Embedded PDF viewer
         pdf_display = f"""
             <iframe 
                 src="data:application/pdf;base64,{base64_pdf}" 
@@ -92,12 +93,15 @@ if st.button("📄 View PDF article"):
                 type="application/pdf">
             </iframe>
         """
-
         st.markdown(pdf_display, unsafe_allow_html=True)
+
+    except FileNotFoundError:
+        st.error(f"❌ PDF file '{PDF_FILE}' not found.")
+        st.info("Make sure the PDF is in the same folder as app.py.")
 
     except Exception as e:
         st.error(f"❌ Error loading PDF: {e}")
-        st.info("Make sure the file is in the same folder as app.py.")
+        st.info("If the PDF is large, use a link-to-open method instead.")
 
 # ------------------------------------------------------------
 # END OF FILE
