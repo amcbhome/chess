@@ -16,8 +16,8 @@ st.set_page_config(
 st.title("**FEN**")
 st.write(
     "Enter any **FEN position** to query the Lichess Opening Explorer API. "
-    "This tool returns: **most common next moves**, **play frequency**, "
-    "**win rates**, **ECO codes**, and displays an **SVG board viewer**."
+    "This tool returns **common next moves**, **ECO codes**, "
+    "**winrates**, and displays a **board viewer**."
 )
 
 # ---------------------------------------------------------
@@ -32,60 +32,69 @@ db_choice = st.sidebar.radio(
 )
 
 speeds = st.sidebar.multiselect(
-    "Game Speeds",
+    "Game Speeds (online db)",
     ["bullet", "blitz", "rapid", "classical"],
     default=["blitz", "rapid"]
 )
 
 ratings = st.sidebar.selectbox(
-    "Rating Range",
+    "Rating Range (online db)",
     ["all", "0-1400", "1400-1800", "1800-2200", "2200-9999"],
     index=0
 )
 
 # ---------------------------------------------------------
-# SVG BOARD RENDERER
+# BOARD RENDERER (SVG)
 # ---------------------------------------------------------
 def show_svg_board(fen):
     board = chess.Board(fen)
-    svg_data = chess.svg.board(board, size=450)
+    svg = chess.svg.board(board, size=450)
 
-    # encode SVG to base64
-    b64 = base64.b64encode(svg_data.encode("utf-8")).decode("utf-8")
-    html = f'<img src="data:image/svg+xml;base64,{b64}"/>'
+    b64 = base64.b64encode(svg.encode("utf-8")).decode("utf-8")
+    html = f'<img src="data:image/svg+xml;base64,{b64}" />'
 
     st.markdown("### Board Viewer")
     st.markdown(html, unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------
-# LICHESS API REQUEST FUNCTION
+# FIXED LICHESS API QUERY (SPEEDS[] + RATINGS[] correct)
 # ---------------------------------------------------------
 def query_lichess(fen):
-    # Select database
-    url = "https://explorer.lichess.ovh/master" if db_choice == "Masters OTB" else "https://explorer.lichess.ovh/lichess"
+    url = (
+        "https://explorer.lichess.ovh/master"
+        if db_choice == "Masters OTB"
+        else "https://explorer.lichess.ovh/lichess"
+    )
 
     params = {
-        "fen": fen.strip(),   # requests auto-encodes the spaces correctly
+        "fen": fen.strip(),
         "moves": 1,
         "topGames": 0,
     }
 
-    # Lichess online DB only
+    # Online DB only
     if db_choice == "Lichess Online":
-        params["speeds"] = ",".join(speeds)
-        params["ratings"] = ratings
 
-    response = requests.get(url, params=params)
+        # Add speeds[] correctly
+        for sp in speeds:
+            params.setdefault("speeds[]", []).append(sp)
 
-    if response.status_code != 200:
-        raise Exception(f"Lichess API returned status {response.status_code}")
+        # Add rating range correctly
+        if ratings != "all":
+            lo, hi = ratings.split("-")
+            params["ratings[]"] = [lo, hi]
 
-    # Parse JSON safely
+    # Send request
+    r = requests.get(url, params=params)
+
+    if r.status_code != 200:
+        raise Exception(f"Lichess returned error {r.status_code}")
+
     try:
-        return response.json()
+        return r.json()
     except:
-        raise Exception("Invalid JSON returned by Lichess (likely no data available for this position).")
+        raise Exception("Invalid or empty JSON from Lichess (likely no games match filters).")
 
 
 # ---------------------------------------------------------
@@ -95,27 +104,27 @@ def show_move_table(data):
     moves = data.get("moves", [])
 
     if not moves:
-        st.warning("No move statistics available for this position.")
+        st.warning("No moves found for this position.")
         return
 
-    table_data = []
+    rows = []
     for m in moves:
         total = m["white"] + m["black"] + m["draws"]
-        win_rate = round(100 * m["white"] / total, 1) if total > 0 else 0
+        winrate = round(m["white"] * 100 / total, 1) if total > 0 else 0
 
-        table_data.append({
+        rows.append({
             "Move (SAN)": m.get("san", "?"),
             "Move (UCI)": m["uci"],
-            "White Win %": win_rate,
+            "White Win %": winrate,
             "Games Played": total
         })
 
     st.subheader("Most Common Next Moves")
-    st.dataframe(table_data, use_container_width=True)
+    st.dataframe(rows, use_container_width=True)
 
 
 # ---------------------------------------------------------
-# MAIN INTERFACE
+# MAIN UI
 # ---------------------------------------------------------
 fen_input = st.text_input(
     "FEN Position",
@@ -123,36 +132,38 @@ fen_input = st.text_input(
 )
 
 if st.button("Query Lichess"):
-    # Validate FEN first
+
+    # Validate FEN
     try:
         chess.Board(fen_input)
     except:
-        st.error("Invalid FEN string. Please check for typos.")
+        st.error("Invalid FEN. Check for mistakes.")
         st.stop()
 
     try:
         data = query_lichess(fen_input)
 
-        # Show chessboard
+        # Board
         show_svg_board(fen_input)
         st.write("---")
 
-        # Show ECO Code
+        # ECO
         if data.get("eco"):
-            st.success(f"**ECO:** {data['eco']} — {data.get('name', '')}")
+            st.success(f"**ECO:** {data['eco']} — {data.get('name','')}")
         else:
-            st.info("No ECO classification for this position.")
+            st.info("No ECO code available.")
+
         st.write("---")
 
-        # Show move statistics
+        # Moves
         show_move_table(data)
 
     except Exception as e:
-        st.error(f"Error querying Lichess API: {e}")
+        st.error(str(e))
 
 # ---------------------------------------------------------
 # FOOTER
 # ---------------------------------------------------------
 st.write("---")
-st.caption("© 2025 — Lichess FEN Explorer (SVG version, Streamlit Cloud compatible)")
+st.caption("© 2025 — Lichess FEN Explorer (Streamlit Cloud compatible)")
 
