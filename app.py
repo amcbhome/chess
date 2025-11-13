@@ -62,10 +62,10 @@ fen_input = st.text_input(
 )
 
 # ------------------------------------------------------------
-# QUERY BUTTON (placeholder)
+# Lichess Query Placeholder
 # ------------------------------------------------------------
 if st.button("Query Lichess"):
-    st.info("⚙️ Lichess API query would run here (your existing logic).")
+    st.info("⚙️ Lichess API query would run here (your logic).")
     st.write("FEN queried:", fen_input)
 
 # ------------------------------------------------------------
@@ -74,32 +74,32 @@ if st.button("Query Lichess"):
 st.write("---")
 st.subheader("📘 View the Chess Article")
 
-# PDF served from Streamlit static folder
-PDF_URL = "static/Gambit_Chess_Article.pdf"
+# PDF hosted on GitHub Pages
+PDF_URL = "https://amcbhome.github.io/chess/Gambit_Chess_Article.pdf"
 
-# Open PDF in new tab (Chrome-safe)
+# Open PDF in a new tab
 st.markdown(
     f"""
-    <p style="padding-top:10px; font-size:20px;">
+    <p style="font-size:20px; padding-top:10px;">
         <a href="{PDF_URL}" target="_blank" style="text-decoration:none;">
-        📄 Open PDF article in a new tab
+            📄 Open PDF article in a new tab
         </a>
     </p>
     """,
     unsafe_allow_html=True
 )
 
-# Optional download button
+# Optional download button - PDF must be in repo root for this to work
 try:
-    with open("static/Gambit_Chess_Article.pdf", "rb") as f:
+    with open("Gambit_Chess_Article.pdf", "rb") as f:
         st.download_button(
-            label="⬇️ Download PDF article",
-            data=f,
+            "⬇️ Download PDF article",
+            f,
             file_name="Gambit_Chess_Article.pdf",
             mime="application/pdf"
         )
-except FileNotFoundError:
-    st.error("❌ PDF not found in /static/. Please ensure it is uploaded correctly.")
+except:
+    st.info("Local PDF not found (download disabled).")
 
 # ------------------------------------------------------------
 # END OF FILE
