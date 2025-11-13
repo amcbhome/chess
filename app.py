@@ -30,7 +30,7 @@ if db_choice == "Lichess (online games)":
 else:
     speeds = []
 
-# Rating filters
+# Rating filters (only for Lichess)
 if db_choice == "Lichess (online games)":
     st.sidebar.subheader("Rating filters (online)")
     rating_bucket = st.sidebar.selectbox(
@@ -50,7 +50,7 @@ st.title("♟️ Lichess Opening Statistics from FEN")
 
 st.write("""
 Enter any chess position in **FEN format** and query the Lichess Opening Explorer
-(online or Masters DB) to see the most common next moves and their statistics.
+(online or Masters database) to see the most common next moves and their statistics.
 """)
 
 # ------------------------------------------------------------
@@ -69,39 +69,37 @@ if st.button("Query Lichess"):
     st.write("FEN queried:", fen_input)
 
 # ------------------------------------------------------------
-# PDF ARTICLE SECTION (STATIC FILE)
+# PDF ARTICLE SECTION
 # ------------------------------------------------------------
 st.write("---")
 st.subheader("📘 View the Chess Article")
 
+# PDF served from Streamlit static folder
 PDF_URL = "static/Gambit_Chess_Article.pdf"
 
-# Open in a new tab (Chrome-compatible)
+# Open PDF in new tab (Chrome-safe)
 st.markdown(
     f"""
-    <div style="padding-bottom:15px;">
-        <a href="{PDF_URL}" target="_blank"
-           style="font-size:20px; text-decoration:none;">
-           📄 Open PDF article in a new tab
+    <p style="padding-top:10px; font-size:20px;">
+        <a href="{PDF_URL}" target="_blank" style="text-decoration:none;">
+        📄 Open PDF article in a new tab
         </a>
-    </div>
+    </p>
     """,
     unsafe_allow_html=True
 )
 
 # Optional download button
 try:
-    with open(f".streamlit/{PDF_URL}", "rb") as f:
+    with open("static/Gambit_Chess_Article.pdf", "rb") as f:
         st.download_button(
             label="⬇️ Download PDF article",
             data=f,
             file_name="Gambit_Chess_Article.pdf",
             mime="application/pdf"
         )
-except Exception:
-    st.info(
-        "If the download fails, ensure the PDF is in `.streamlit/static/`."
-    )
+except FileNotFoundError:
+    st.error("❌ PDF not found in /static/. Please ensure it is uploaded correctly.")
 
 # ------------------------------------------------------------
 # END OF FILE
