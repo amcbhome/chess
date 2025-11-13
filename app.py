@@ -10,11 +10,11 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------
-# SIDEBAR
+# SIDEBAR: DATABASE & FILTERS
 # ------------------------------------------------------------
 st.sidebar.title("Database & Filters")
 
-# Database choice
+# Database selector
 db_choice = st.sidebar.radio(
     "Database",
     ["Lichess (online games)", "Masters (OTB)"],
@@ -60,11 +60,11 @@ Enter any chess position in **FEN format** and query the Lichess Opening Explore
 # ------------------------------------------------------------
 fen_input = st.text_input(
     "FEN position",
-    value="rn bqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    value="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 )
 
 # ------------------------------------------------------------
-# QUERY BUTTON (placeholder)
+# QUERY BUTTON (placeholder for your existing code)
 # ------------------------------------------------------------
 if st.button("Query Lichess"):
     st.info("⚙️ Lichess API query would run here (your existing logic).")
@@ -81,7 +81,8 @@ PDF_FILE = "Chess_Article_on_Gambit_Openings.pdf"
 if st.button("📄 View PDF article"):
     try:
         with open(PDF_FILE, "rb") as f:
-            base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+            pdf_bytes = f.read()
+            base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
 
         pdf_display = f"""
             <iframe 
@@ -94,11 +95,10 @@ if st.button("📄 View PDF article"):
 
         st.markdown(pdf_display, unsafe_allow_html=True)
 
-    except FileNotFoundError:
-        st.error("❌ PDF file not found. Make sure "
-                 "`Chess_Article_on_Gambit_Openings.pdf` "
-                 "is in the same directory as app.py.")
+    except Exception as e:
+        st.error(f"❌ Error loading PDF: {e}")
+        st.info("Make sure the file is in the same folder as app.py.")
 
 # ------------------------------------------------------------
 # END OF FILE
-# -
+# ------------------------------------------------------------
