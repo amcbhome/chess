@@ -13,7 +13,6 @@ st.set_page_config(
 # ------------------------------------------------------------
 st.sidebar.title("Database & Filters")
 
-# Database selector
 db_choice = st.sidebar.radio(
     "Database",
     ["Lichess (online games)", "Masters (OTB)"],
@@ -31,7 +30,7 @@ if db_choice == "Lichess (online games)":
 else:
     speeds = []
 
-# Rating filters (only for Lichess)
+# Rating filters
 if db_choice == "Lichess (online games)":
     st.sidebar.subheader("Rating filters (online)")
     rating_bucket = st.sidebar.selectbox(
@@ -51,11 +50,11 @@ st.title("♟️ Lichess Opening Statistics from FEN")
 
 st.write("""
 Enter any chess position in **FEN format** and query the Lichess Opening Explorer
-(online or Masters database) to see the most common next moves and their statistics.
+(online or Masters DB) to see the most common next moves and their statistics.
 """)
 
 # ------------------------------------------------------------
-# FEN INPUT BOX
+# FEN INPUT
 # ------------------------------------------------------------
 fen_input = st.text_input(
     "FEN position",
@@ -70,17 +69,18 @@ if st.button("Query Lichess"):
     st.write("FEN queried:", fen_input)
 
 # ------------------------------------------------------------
-# PDF ARTICLE SECTION (Chrome-safe)
+# PDF ARTICLE SECTION (STATIC FILE)
 # ------------------------------------------------------------
 st.write("---")
 st.subheader("📘 View the Chess Article")
 
-PDF_FILE = "Gambit_Chess_Article.pdf"
+PDF_URL = "static/Gambit_Chess_Article.pdf"
 
+# Open in a new tab (Chrome-compatible)
 st.markdown(
     f"""
-    <div style="padding-top:10px; padding-bottom:20px;">
-        <a href="{PDF_FILE}" target="_blank"
+    <div style="padding-bottom:15px;">
+        <a href="{PDF_URL}" target="_blank"
            style="font-size:20px; text-decoration:none;">
            📄 Open PDF article in a new tab
         </a>
@@ -89,20 +89,19 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ------------------------------------------------------------
-# OPTIONAL: PDF DOWNLOAD BUTTON
-# ------------------------------------------------------------
+# Optional download button
 try:
-    with open(PDF_FILE, "rb") as f:
+    with open(f".streamlit/{PDF_URL}", "rb") as f:
         st.download_button(
             label="⬇️ Download PDF article",
             data=f,
-            file_name=PDF_FILE,
+            file_name="Gambit_Chess_Article.pdf",
             mime="application/pdf"
         )
-except FileNotFoundError:
-    st.error(f"PDF file '{PDF_FILE}' not found.")
-    st.info("Ensure the PDF is located in the same folder as app.py.")
+except Exception:
+    st.info(
+        "If the download fails, ensure the PDF is in `.streamlit/static/`."
+    )
 
 # ------------------------------------------------------------
 # END OF FILE
